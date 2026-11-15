@@ -16,6 +16,8 @@ Category: דו״חות
 
 בכל אזור מוצגים מקום לתכנון העירייה ומקום לצילום מהשטח. הדיווח עצמו מתאר את הנצפה ומבחין בין עובדה, התרשמות ושאלה.
 
+<span id="area-01"></span>
+
 ### 1. מתקני הכושר
 
 **מצב נוכחי:** נתון לדוגמה  
@@ -26,6 +28,8 @@ Category: דו״חות
 <figure><figcaption>תכנון העירייה</figcaption><div class="report-image-placeholder"><span aria-hidden="true">⌗</span><p>מקום להדמיה או לתשריט</p></div><p class="image-caption">מקור: יתווסף בהמשך</p></figure>
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
+
+<span id="area-02"></span>
 
 ### 2. בין צמרות
 
@@ -38,6 +42,8 @@ Category: דו״חות
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
 
+<span id="area-03"></span>
+
 ### 3. משחק לפעוטות
 
 **מצב נוכחי:** נתון לדוגמה  
@@ -48,6 +54,8 @@ Category: דו״חות
 <figure><figcaption>תכנון העירייה</figcaption><div class="report-image-placeholder"><span aria-hidden="true">⌗</span><p>מקום להדמיה או לתשריט</p></div><p class="image-caption">מקור: יתווסף בהמשך</p></figure>
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
+
+<span id="area-04"></span>
 
 ### 4. מצללת מטפסים
 
@@ -60,6 +68,8 @@ Category: דו״חות
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
 
+<span id="area-05"></span>
+
 ### 5. רחבת נורדאו
 
 **מצב נוכחי:** נתון לדוגמה  
@@ -70,6 +80,8 @@ Category: דו״חות
 <figure><figcaption>תכנון העירייה</figcaption><div class="report-image-placeholder"><span aria-hidden="true">⌗</span><p>מקום להדמיה או לתשריט</p></div><p class="image-caption">מקור: יתווסף בהמשך</p></figure>
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
+
+<span id="area-06"></span>
 
 ### 6. המעיין הפועם
 
@@ -82,6 +94,8 @@ Category: דו״חות
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
 
+<span id="area-07"></span>
+
 ### 7. אזור נדנדות
 
 **מצב נוכחי:** נתון לדוגמה  
@@ -92,6 +106,8 @@ Category: דו״חות
 <figure><figcaption>תכנון העירייה</figcaption><div class="report-image-placeholder"><span aria-hidden="true">⌗</span><p>מקום להדמיה או לתשריט</p></div><p class="image-caption">מקור: יתווסף בהמשך</p></figure>
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
+
+<span id="area-08"></span>
 
 ### 8. דק הפרלמנט
 
@@ -104,6 +120,8 @@ Category: דו״חות
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
 
+<span id="area-09"></span>
+
 ### 9. שביל נגיש
 
 **מצב נוכחי:** נתון לדוגמה  
@@ -115,6 +133,8 @@ Category: דו״חות
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
 
+<span id="area-10"></span>
+
 ### 10. פרגולות הזית והחורשה
 
 **מצב נוכחי:** נתון לדוגמה  
@@ -125,6 +145,8 @@ Category: דו״חות
 <figure><figcaption>תכנון העירייה</figcaption><div class="report-image-placeholder"><span aria-hidden="true">⌗</span><p>מקום להדמיה או לתשריט</p></div><p class="image-caption">מקור: יתווסף בהמשך</p></figure>
 <figure><figcaption>המצב בשטח</figcaption><div class="report-image-placeholder"><span aria-hidden="true">◫</span><p>מקום לצילום מהשטח</p></div><p class="image-caption">תאריך ומיקום: יתווספו בהמשך</p></figure>
 </div>
+
+<span id="area-11"></span>
 
 ### 11. חצר כלבים
 
