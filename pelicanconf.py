@@ -6,6 +6,7 @@ TIMEZONE = 'Asia/Jerusalem'
 DEFAULT_LANG = 'he'
 THEME = 'theme'
 ARTICLE_PATHS = ['reports']
+ARTICLE_ORDER_BY = 'reversed-date'
 STATIC_PATHS = ['images']
 ARTICLE_URL = 'reports/{slug}/'
 ARTICLE_SAVE_AS = 'reports/{slug}/index.html'
