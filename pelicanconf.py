@@ -15,3 +15,5 @@ DEFAULT_PAGINATION = False
 FEED_ALL_ATOM = None
 CATEGORY_FEED_ATOM = None
 RELATIVE_URLS = True
+
+AREAS = ['מתקני הכושר', 'בין צמרות', 'משחק לפעוטות', 'מצללת מטפסים', 'רחבת נורדאו', 'המעיין הפועם', 'אזור נדנדות', 'דק הפרלמנט', 'שביל נגיש', 'פרגולות הזית והחורשה', 'חצר כלבים']
