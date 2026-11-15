@@ -1,1 +1,4 @@
 pelican[markdown]>=4.9,<5
+psycopg[binary]>=3.2,<4
+boto3>=1.34,<2
+Pillow>=10,<13
