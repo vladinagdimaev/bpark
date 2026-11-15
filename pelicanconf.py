@@ -1,0 +1,17 @@
+AUTHOR = 'ולדי ואריאל'
+SITENAME = 'גן בנימין | מעקב קהילתי'
+SITEURL = ''
+PATH = 'content'
+TIMEZONE = 'Asia/Jerusalem'
+DEFAULT_LANG = 'he'
+THEME = 'theme'
+ARTICLE_PATHS = ['reports']
+STATIC_PATHS = ['images']
+ARTICLE_URL = 'reports/{slug}/'
+ARTICLE_SAVE_AS = 'reports/{slug}/index.html'
+INDEX_SAVE_AS = 'index.html'
+DIRECT_TEMPLATES = ['index']
+DEFAULT_PAGINATION = False
+FEED_ALL_ATOM = None
+CATEGORY_FEED_ATOM = None
+RELATIVE_URLS = True
