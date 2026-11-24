@@ -1,0 +1,10 @@
+{% extends 'park/base.html' %}
+{% block content %}
+<h1>בחירת סיסמה</h1>
+{% if validlink %}
+<form method="post" class="editor">{% csrf_token %}{{ form.as_p }}<button>שמירת סיסמה</button></form>
+{% else %}
+<p>קישור ההקמה פג או שכבר השתמשת בו.</p>
+<a href="{% url 'login' %}">כניסה לניהול הדו״חות</a>
+{% endif %}
+{% endblock %}

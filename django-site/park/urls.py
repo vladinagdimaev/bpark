@@ -3,6 +3,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path
 
 from . import views
+from .account_setup import AccountSetupView
 
 urlpatterns = [
     path("", views.home, name="home"),
@@ -16,6 +17,7 @@ urlpatterns = [
     path("desk/<int:pk>/area/new/", views.observation_edit, name="new_area"),
     path("desk/<int:pk>/area/<int:area>/", views.observation_edit, name="edit_area"),
     path("desk/<int:pk>/action/<str:action>/", views.transition, name="transition"),
+    path("account/setup/<uidb64>/<token>/", AccountSetupView.as_view(), name="account_setup"),
     path("login/", LoginView.as_view(template_name="park/login.html"), name="login"),
     path("logout/", LogoutView.as_view(), name="logout"),
     path("admin/", admin.site.urls),
