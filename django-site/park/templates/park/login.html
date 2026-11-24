@@ -1,0 +1,4 @@
+{% extends 'park/base.html' %}
+{% block content %}<h1>כניסה לניהול הדו״חות</h1>
+<form method="post" class="editor">{% csrf_token %}{{ form.as_p }}
+<input type="hidden" name="next" value="{{ next }}"><button>כניסה</button></form>{% endblock %}

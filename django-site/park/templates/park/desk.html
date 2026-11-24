@@ -1,0 +1,8 @@
+{% extends 'park/base.html' %}
+{% block content %}<h1>ניהול דו״חות סיור</h1>
+<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button>יציאה</button></form>
+<section><h2>הדו״חות שלי</h2><a class="button" href="{% url 'new' %}">דו״ח חדש</a>
+<ul>{% for report in mine %}<li><a href="{% url 'edit' report.pk %}">{{ report.visited_on|date:"j בF Y" }}</a> · {{ report.get_state_display }}</li>{% empty %}<li>עדיין אין דו״חות.</li>{% endfor %}</ul></section>
+{% if perms.park.publish_report %}<section><h2>ממתינים לאישור</h2><ul>
+{% for report in queue %}<li><a href="{% url 'edit' report.pk %}">{{ report.visited_on|date:"j בF Y" }}</a></li>{% empty %}<li>אין דו״חות ממתינים.</li>{% endfor %}
+</ul></section>{% endif %}{% endblock %}

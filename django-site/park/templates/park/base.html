@@ -1,0 +1,18 @@
+{% load static %}<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}גן בנימין · מעקב תושבים{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'park/site.css' %}">
+<script defer src="{% static 'park/site.js' %}"></script>
+</head>
+<body><a class="skip" href="#main">דילוג לתוכן</a>
+<header><nav class="container" aria-label="ניווט ראשי">
+<a class="brand" href="{% url 'home' %}">גן בנימין <small>מעקב תושבים</small></a>
+<div><a href="{% url 'home' %}#archive">כל הדו״חות</a> <a href="{% url 'desk' %}">ניהול דו״חות</a></div>
+</nav></header>
+<main id="main" class="container">
+{% for message in messages %}<p role="status">{{ message }}</p>{% endfor %}
+{% block content %}{% endblock %}</main>
+<footer><div class="container">גן בנימין · מעקב תושבים אחר השיפוץ</div></footer>
+</body></html>

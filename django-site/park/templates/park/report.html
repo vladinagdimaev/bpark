@@ -1,0 +1,33 @@
+{% extends 'park/base.html' %}
+{% block title %}דו״ח מעקב תקופתי {{ report.visited_on|date:"j בF Y" }}{% endblock %}
+{% block content %}
+{% if preview %}<p><a href="{% url 'edit' report.pk %}">חזרה לניהול הדו״ח</a> · תצוגת קריאה</p>{% endif %}
+<h1>דו״ח מעקב תקופתי {{ report.visited_on|date:"j בF Y" }}</h1>
+<p><strong>סוקרים:</strong> {% for person in report.reviewers.all %}{% firstof person.get_full_name person.username %}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+{% if report.summary %}<div>{{ report.summary|linebreaks }}</div>{% endif %}
+<section><h2>פרטי הסיור</h2>
+{% if overview %}<figure class="overview"><img src="{% url 'municipal_photo' 0 %}" alt="הדמיה כללית של הגן"><figcaption>{{ overview.caption }}</figcaption></figure>{% endif %}
+<div data-areas>
+<nav class="tabs" aria-label="אזורי הגן">{% for area, name, plan, items in areas %}<a href="#area-{{ area }}">{{ name }}</a>{% endfor %}</nav>
+{% for area, name, plan, items in areas %}
+<article class="panel" id="area-{{ area }}"><h3>{{ name }}</h3>
+{% if items %}
+{% if items.0.report_id != report.pk %}<p>האזור לא תועד בסיור זה. מוצג דיווח מסיור קודם.</p>{% endif %}
+{% if items|length > 1 %}<label hidden data-history-label>דיווח מתאריך <select data-history>
+{% for item in items %}<option value="{{ item.pk }}">{{ item.report.visited_on|date:"j בF Y" }}</option>{% endfor %}
+</select></label>{% endif %}
+{% for item in items %}
+<div data-observation="{{ item.pk }}"><p><time datetime="{{ item.report.visited_on|date:'Y-m-d' }}">{{ item.report.visited_on|date:"j בF Y" }}</time></p>
+<p><strong>סטטוס:</strong> {{ item.get_status_display }}</p>
+{% if item.details %}{{ item.details|linebreaks }}{% endif %}
+{% if item.follow_up %}<h4>נקודות למעקב</h4>{{ item.follow_up|linebreaks }}{% endif %}
+<div class="comparison">
+<figure><h4>תכנון העירייה</h4>{% if plan %}<img loading="lazy" src="{% url 'municipal_photo' area %}" alt="תכנון העירייה לאזור {{ name }}"><figcaption>{{ plan.caption }}</figcaption>{% else %}<p>תוכנית העירייה טרם צורפה.</p>{% endif %}</figure>
+<figure><h4>המצב בשטח</h4>{% if item.has_photo %}<img loading="lazy" src="{% url 'observation_photo' item.pk %}" alt="{{ item.caption|default:name }}"><figcaption>{{ item.caption }}</figcaption>{% else %}<p>לא צורפה תמונה מהשטח.</p>{% endif %}</figure>
+</div><h4>נגישות</h4><p>מעבר פנוי: {{ item.get_clear_path_display }}</p><p>גישה רציפה: {{ item.get_continuous_access_display }}</p>
+</div>{% endfor %}
+{% else %}<p>עדיין אין דיווח על האזור.</p>{% if plan %}<img loading="lazy" class="preview" src="{% url 'municipal_photo' area %}" alt="תכנון העירייה לאזור {{ name }}">{% endif %}{% endif %}
+</article>{% endfor %}
+</div></section>
+{% if report.next_visit %}<p>הסיור הבא מתוכנן ל־{{ report.next_visit|date:"j בF Y" }}.</p>{% endif %}
+{% endblock %}

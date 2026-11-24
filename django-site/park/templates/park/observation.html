@@ -1,0 +1,15 @@
+{% extends 'park/base.html' %}
+{% block content %}<h1>דיווח על אזור</h1><a href="{% url 'edit' report.pk %}">חזרה לדו״ח</a>
+<form method="post" enctype="multipart/form-data" class="editor">{% csrf_token %}{{ form.non_field_errors }}
+<p>{{ form.area.label_tag }} {{ form.area }} {{ form.area.errors }}</p>
+{% if observation.photo %}<img class="preview" src="{% url 'observation_photo' observation.pk %}" alt="התמונה השמורה לאזור">{% endif %}
+<img class="preview" data-upload-preview hidden alt="תצוגה מקדימה של צילום השטח">
+<p>{{ form.camera.label_tag }} {{ form.camera }} {{ form.camera.errors }}</p>
+<p>{{ form.upload.label_tag }} {{ form.upload }} {{ form.upload.errors }}</p>
+<p>{{ form.caption.label_tag }} {{ form.caption }} {{ form.caption.errors }}</p>
+<p>{{ form.status.label_tag }} {{ form.status }} {{ form.status.errors }}</p>
+<p>{{ form.details.label_tag }} {{ form.details }} {{ form.details.errors }}</p>
+<p>{{ form.follow_up.label_tag }} {{ form.follow_up }} {{ form.follow_up.errors }}</p>
+<fieldset><legend>נגישות</legend><p>{{ form.clear_path.label_tag }} {{ form.clear_path }} {{ form.clear_path.errors }}</p>
+<p>{{ form.continuous_access.label_tag }} {{ form.continuous_access }} {{ form.continuous_access.errors }}</p></fieldset>
+<button>שמירת אזור</button></form>{% endblock %}

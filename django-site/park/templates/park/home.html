@@ -1,0 +1,15 @@
+{% extends 'park/base.html' %}
+{% block content %}
+<section class="hero"><p>חיפה · גן בנימין</p><h1>מעקב אחר שיפוץ גן בנימין</h1>
+<p>תיעוד מהשטח לצד תוכניות העירייה, לפי אזור ותאריך סיור.</p></section>
+<section><h2>הדו״ח האחרון</h2>
+{% if latest %}<a class="card" href="{% url 'report' latest.pk %}">דו״ח מעקב תקופתי {{ latest.visited_on|date:"j בF Y" }}</a>
+{% else %}<p>הדו״ח הראשון יופיע כאן לאחר פרסומו.</p>{% endif %}</section>
+<section><h2>11 אזורים בגן</h2><ul class="grid">
+{% for area, name, report_id in areas %}
+<li class="card">{% if report_id %}<a href="{% url 'report' report_id %}#area-{{ area }}">{{ name }}</a>{% else %}{{ name }}{% endif %}</li>
+{% endfor %}</ul></section>
+<section id="archive"><h2>כל הדו״חות</h2>
+<ul class="archive">{% for report in reports %}<li><a href="{% url 'report' report.pk %}">דו״ח מעקב תקופתי {{ report.visited_on|date:"j בF Y" }}</a></li>
+{% empty %}<li>דו״חות שיפורסמו יופיעו כאן לפי תאריך הסיור.</li>{% endfor %}</ul></section>
+{% endblock %}
