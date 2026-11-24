@@ -18,7 +18,7 @@ figure{margin:0}figure img,.preview{display:block;width:100%;max-width:38rem;max
 .panel{touch-action:pan-y pinch-zoom}.actions{justify-content:flex-start}
 .editor{max-width:46rem;margin-block:1.5rem}label{font-weight:600}input,select,textarea{font:inherit;color:inherit;max-width:100%;padding:.45rem;border:1px solid #819e90;border-radius:.25rem}
 textarea{display:block;width:100%;min-height:5rem}.errorlist{color:#8a2924}.skip{position:absolute;inset-inline-start:1rem;top:-5rem}.skip:focus{top:.5rem;background:white;padding:1rem}
-@media(max-width:40rem){.comparison{grid-template-columns:1fr 1fr;gap:.5rem}.comparison figure{padding:.5rem}.panel{padding:.75rem}}
+@media(max-width:40rem){.comparison{grid-template-columns:minmax(0,1fr);gap:.75rem}.comparison figure{padding:.5rem}.panel{padding:.75rem}}
 
 
 .survey{max-width:52rem;margin-inline:auto}
