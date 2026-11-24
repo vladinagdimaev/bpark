@@ -53,7 +53,7 @@ with psycopg.connect(os.environ['BPARK_READ_DATABASE_URL'], row_factory=dict_row
         title=' '.join(report['title'].splitlines()).strip().replace('<','&lt;').replace('>','&gt;')
         date=report['visit_at'].astimezone(ZoneInfo('Asia/Jerusalem')).strftime('%Y-%m-%d %H:%M')
         parts=[f'Title: {title}\nDate: {date}\nSlug: report-{rid}\nSummary: דו״ח מעקב קהילתי\n\n', '<h2>פרטי הסיור</h2>',field('משתתפים',report['participants']),field('סיכום הביקור',report['summary'])]
-        rows=db.execute('SELECT areas.id,areas.name,observations.*, to_jsonb(observations)->'accessibility' AS accessibility_answers FROM areas LEFT JOIN area_observations observations ON observations.area_id=areas.id AND observations.report_id=%s ORDER BY areas.id',(rid,)).fetchall()
+        rows=db.execute("SELECT areas.id,areas.name,observations.*, to_jsonb(observations)->'accessibility' AS accessibility_answers FROM areas LEFT JOIN area_observations observations ON observations.area_id=areas.id AND observations.report_id=%s ORDER BY areas.id",(rid,)).fetchall()
         for area in rows:
             aid = area['id']
             photos=db.execute('SELECT id,object_key,caption,photographed_at FROM report_photos WHERE report_id=%s AND area_id=%s ORDER BY created_at DESC',(rid,aid)).fetchall()
