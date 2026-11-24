@@ -49,8 +49,10 @@
     <section class="actions" aria-label="פעולות דו״ח">
         <a class="button" href="{% url 'preview' report.pk %}">תצוגת קריאה</a>
         {% if editable %}<form method="post" action="{% url 'transition' report.pk 'submit' %}">{% csrf_token %}<button>שליחה לאישור</button></form>{% endif %}
-        {% if can_review %}
+        {% if can_publish %}
         <form method="post" action="{% url 'transition' report.pk 'publish' %}">{% csrf_token %}<button>פרסום דו״ח</button></form>
+        {% endif %}
+        {% if can_review %}
         <form method="post" action="{% url 'transition' report.pk 'return' %}">{% csrf_token %}<button>החזרה לטיוטה</button></form>
         {% endif %}
     </section>

@@ -53,3 +53,17 @@ class PublicationTests(TestCase):
         self.assertEqual(home.context["latest"], newest)
         self.assertContains(home, f"{public_url}#area-4")
         self.assertContains(self.client.get(reverse("report", args=[newest.pk])), "מוצג דיווח מסיור קודם")
+
+    def test_superuser_can_publish_own_submitted_report(self):
+        author = User.objects.create_superuser("admin")
+        report = Report.objects.create(owner=author, summary="סיור בדיקה")
+        edit_url = reverse("edit", args=[report.pk])
+        publish_url = reverse("transition", args=[report.pk, "publish"])
+        self.client.force_login(author)
+        self.assertEqual(self.client.post(publish_url).status_code, 403)
+        self.assertEqual(self.client.post(reverse("transition", args=[report.pk, "submit"])).status_code, 302)
+        self.assertContains(self.client.get(edit_url), "פרסום דו״ח")
+        self.assertEqual(self.client.post(publish_url).status_code, 302)
+        report.refresh_from_db()
+        self.assertEqual(report.state, Report.State.PUBLIC)
+        self.assertIsNotNone(report.published_at)

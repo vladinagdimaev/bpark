@@ -50,6 +50,16 @@ def coordinator(user):
     return user.has_perm("park.publish_report")
 
 
+def can_review_report(user, report):
+    return report.state == Report.State.REVIEW and coordinator(user) and report.owner_id != user.pk
+
+
+def can_publish_report(user, report):
+    return report.state == Report.State.REVIEW and (
+        user.is_superuser or can_review_report(user, report)
+    )
+
+
 def accessible_report(user, pk, lock=False):
     reports = Report.objects.select_for_update() if lock else Report.objects
     report = get_object_or_404(reports, pk=pk)
@@ -146,7 +156,8 @@ def edit(request, pk=None):
     return render(request, "park/edit.html", {
         "report": report, "form": form, "editable": editable, "area_forms": area_forms,
         "previous": previous_by_area.values(),
-        "can_review": coordinator(request.user) and report.owner_id != request.user.pk and report.state == Report.State.REVIEW,
+        "can_review": can_review_report(request.user, report),
+        "can_publish": can_publish_report(request.user, report),
     })
 
 
@@ -177,14 +188,11 @@ def transition(request, pk, action):
             messages.error(request, "הוסיפו דיווח על אזור או סיכום לפני השליחה.")
             return redirect("edit", pk=pk)
         report.state = Report.State.REVIEW
-    elif report.state == Report.State.REVIEW and coordinator(request.user) and report.owner_id != request.user.pk:
-        if action == "publish":
-            report.state = Report.State.PUBLIC
-            report.published_at = timezone.now()
-        elif action == "return":
-            report.state = Report.State.DRAFT
-        else:
-            raise PermissionDenied
+    elif action == "publish" and can_publish_report(request.user, report):
+        report.state = Report.State.PUBLIC
+        report.published_at = timezone.now()
+    elif action == "return" and can_review_report(request.user, report):
+        report.state = Report.State.DRAFT
     else:
         raise PermissionDenied
     report.save(update_fields=["state", "published_at"])
