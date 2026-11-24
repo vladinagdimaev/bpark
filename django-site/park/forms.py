@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from PIL import Image, ImageOps
 
-from .models import MunicipalImage, Observation, Report
+from .models import AREAS, MunicipalImage, Observation, Report
 
 
 class DateInput(forms.DateInput):
@@ -18,7 +18,10 @@ class ReportForm(forms.ModelForm):
     class Meta:
         model = Report
         fields = ["visited_on", "reviewers", "summary", "next_visit"]
-        widgets = {"visited_on": DateInput(), "next_visit": DateInput(), "reviewers": forms.CheckboxSelectMultiple()}
+        widgets = {
+            "visited_on": DateInput(), "next_visit": DateInput(),
+            "reviewers": forms.CheckboxSelectMultiple(), "summary": forms.Textarea(attrs={"rows": 3}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,7 +61,13 @@ class ObservationForm(forms.ModelForm):
 
     class Meta:
         model = Observation
+        widgets = {name: forms.Textarea(attrs={"rows": 2}) for name in ("details", "follow_up")}
         fields = ["area", "status", "details", "follow_up", "clear_path", "continuous_access", "camera", "upload", "caption"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["area"].disabled = True
 
     def clean(self):
         data = super().clean()
@@ -84,3 +93,9 @@ class MunicipalImageForm(forms.ModelForm):
         elif not self.instance.image:
             raise forms.ValidationError("בחרו תמונה.")
         return file
+
+
+ObservationFormSet = forms.inlineformset_factory(
+    Report, Observation, form=ObservationForm, extra=0,
+    max_num=len(AREAS), validate_max=True, can_delete=True,
+)

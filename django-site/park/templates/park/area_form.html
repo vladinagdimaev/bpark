@@ -1,0 +1,20 @@
+<fieldset class="survey-card survey-area" data-area-form>
+    <legend data-area-title>{% if area_form.instance.pk %}{{ area_form.instance.get_area_display }}{% else %}אזור חדש{% endif %}</legend>
+    {% for field in area_form.hidden_fields %}{{ field }}{{ field.errors }}{% endfor %}
+    {{ area_form.non_field_errors }}
+    <div class="survey-meta"><div>{{ area_form.area.as_field_group }}</div><div>{{ area_form.status.as_field_group }}</div></div>
+    <div class="survey-photos">
+        {% if area_form.instance.has_photo %}<img class="preview" data-saved-photo src="{% url 'observation_photo' area_form.instance.pk %}" alt="הצילום השמור לאזור">{% endif %}
+        <img class="preview" data-upload-preview hidden alt="תצוגה מקדימה של צילום השטח">
+        <div>{{ area_form.camera.as_field_group }}</div>
+        <div>{{ area_form.upload.as_field_group }}</div>
+        <div>{{ area_form.caption.as_field_group }}</div>
+    </div>
+    <div data-previous-report></div>
+    <div>{{ area_form.details.as_field_group }}</div>
+    <div>{{ area_form.follow_up.as_field_group }}</div>
+    <fieldset class="survey-access"><legend>נגישות</legend>
+        <div class="survey-meta"><div>{{ area_form.clear_path.as_field_group }}</div><div>{{ area_form.continuous_access.as_field_group }}</div></div>
+    </fieldset>
+    <div data-remove-area>{{ area_form.DELETE }} <label for="{{ area_form.DELETE.id_for_label }}">הסרת אזור מהדו״ח</label></div>
+</fieldset>

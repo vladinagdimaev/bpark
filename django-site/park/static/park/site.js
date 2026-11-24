@@ -54,9 +54,11 @@ if (areas) {
     selectHash();
 }
 
-const imagePreview = document.querySelector("[data-upload-preview]");
-if (imagePreview) {
-    const inputs = Array.from(document.querySelectorAll("input[type=file]"));
+function bindPhotoPreview(container) {
+    const imagePreview = container.querySelector("[data-upload-preview]");
+    if (!imagePreview) return;
+    const saved = container.querySelector("[data-saved-photo]");
+    const inputs = Array.from(container.querySelectorAll("input[type=file]"));
     let url;
     inputs.forEach(input => input.addEventListener("change", () => {
         if (url) URL.revokeObjectURL(url);
@@ -66,5 +68,59 @@ if (imagePreview) {
             imagePreview.src = url;
         }
         imagePreview.hidden = !input.files[0];
+        if (saved) saved.hidden = !imagePreview.hidden;
     }));
+}
+
+const survey = document.querySelector("[data-survey]");
+if (survey) {
+    const list = survey.querySelector("[data-area-list]");
+    const template = survey.querySelector("[data-empty-area]");
+    const total = survey.elements["areas-TOTAL_FORMS"];
+    const add = survey.querySelector("[data-add-area]");
+    const previous = new Map(Array.from(survey.querySelectorAll("[data-previous]"), item => [
+        item.dataset.previous, item.content,
+    ]));
+    const fields = () => Array.from(list.querySelectorAll("[data-area-form]"));
+    const selectArea = row => row.querySelector('select[name$="-area"]');
+    const remove = row => row.querySelector('input[name$="-DELETE"]');
+    const updateOptions = () => {
+        const active = fields().filter(row => !remove(row).checked);
+        const used = new Set(active.map(row => selectArea(row).value));
+        active.forEach(row => {
+            const select = selectArea(row);
+            Array.from(select.options).forEach(option => {
+                option.disabled = Boolean(option.value && option.value !== select.value && used.has(option.value));
+            });
+        });
+        add.disabled = active.length >= 11;
+    };
+    const bindArea = row => {
+        bindPhotoPreview(row);
+        const select = selectArea(row);
+        const title = row.querySelector("[data-area-title]");
+        const history = row.querySelector("[data-previous-report]");
+        const update = () => {
+            title.textContent = select.value ? select.selectedOptions[0].textContent : "אזור חדש";
+            const content = previous.get(select.value);
+            history.replaceChildren(...(content ? [content.cloneNode(true)] : []));
+            updateOptions();
+        };
+        select.addEventListener("change", update);
+        remove(row).addEventListener("change", updateOptions);
+        update();
+    };
+    fields().forEach(bindArea);
+    add.hidden = false;
+    updateOptions();
+    add.addEventListener("click", () => {
+        const index = Number(total.value);
+        list.insertAdjacentHTML("beforeend", template.innerHTML.replaceAll("__prefix__", index));
+        total.value = index + 1;
+        const row = list.lastElementChild;
+        bindArea(row);
+        selectArea(row).focus();
+    });
+} else {
+    bindPhotoPreview(document);
 }

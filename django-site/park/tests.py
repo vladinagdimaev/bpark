@@ -18,18 +18,18 @@ class PublicationTests(TestCase):
         author.user_permissions.add(permission)
         reviewer.user_permissions.add(permission)
         self.client.force_login(author)
+        image = BytesIO()
+        Image.new("RGB", (12, 10)).save(image, "PNG")
         response = self.client.post(reverse("new"), {
             "visited_on": "2026-11-10", "reviewers": [author.pk], "summary": "סיור בדיקה",
+            "areas-TOTAL_FORMS": "1", "areas-INITIAL_FORMS": "0",
+            "areas-0-area": "4", "areas-0-status": "active",
+            "areas-0-clear_path": "yes", "areas-0-continuous_access": "unknown",
+            "areas-0-camera": SimpleUploadedFile("capture.png", image.getvalue(), content_type="image/png"),
         })
         self.assertEqual(response.status_code, 302)
         report = Report.objects.get()
-        image = BytesIO()
-        Image.new("RGB", (12, 10)).save(image, "PNG")
-        response = self.client.post(reverse("new_area", args=[report.pk]), {
-            "area": 4, "status": "active", "clear_path": "yes", "continuous_access": "unknown",
-            "camera": SimpleUploadedFile("capture.png", image.getvalue(), content_type="image/png"),
-        })
-        self.assertEqual(response.status_code, 302)
+        self.assertContains(self.client.get(response.url), "הוספת אזור")
         item = report.observations.get()
         photo_url = reverse("observation_photo", args=[item.pk])
         public_url = reverse("report", args=[report.pk])

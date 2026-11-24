@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
-from .forms import ObservationForm, ReportForm
+from .forms import ObservationForm, ObservationFormSet, ReportForm
 from .models import AREA_CHOICES, MunicipalImage, Observation, Report
 
 
@@ -121,14 +121,32 @@ def edit(request, pk=None):
     editable = report.owner_id == request.user.pk and report.state == Report.State.DRAFT
     if request.method == "POST" and not editable:
         raise PermissionDenied
-    form = ReportForm(request.POST or None, instance=report)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        return redirect("edit", pk=report.pk)
+    bound = request.method == "POST"
+    form = ReportForm(
+        request.POST if bound else None, instance=report,
+        initial={"reviewers": [request.user.pk]} if not report.pk else None,
+    )
+    area_forms = ObservationFormSet(
+        request.POST if bound else None, request.FILES if bound else None,
+        instance=report, queryset=observation_rows(Observation.objects.all()), prefix="areas",
+    ) if editable else None
+    if bound:
+        report_valid = form.is_valid()
+        areas_valid = area_forms.is_valid()
+        if report_valid and areas_valid:
+            area_forms.instance = form.save()
+            area_forms.save()
+            messages.success(request, "הטיוטה נשמרה.")
+            return redirect("edit", pk=report.pk)
+    previous_by_area = {}
+    if editable:
+        earlier = public_observations().filter(report__visited_on__lte=report.visited_on)
+        for item in earlier.select_related("report").order_by("-report__visited_on", "-report_id"):
+            previous_by_area.setdefault(item.area, item)
     return render(request, "park/edit.html", {
-        "report": report, "form": form, "editable": editable,
+        "report": report, "form": form, "editable": editable, "area_forms": area_forms,
+        "previous": previous_by_area.values(),
         "can_review": coordinator(request.user) and report.owner_id != request.user.pk and report.state == Report.State.REVIEW,
-        "observations": report.observations.defer("photo") if report.pk else [],
     })
 
 

@@ -1,16 +1,59 @@
 {% extends 'park/base.html' %}
-{% block content %}<h1>{% if report.pk %}דו״ח סיור{% else %}דו״ח חדש{% endif %}</h1>
-<a href="{% url 'desk' %}">חזרה לדו״חות</a>
-{% if editable %}<section><h2>פרטי הסיור</h2><form method="post">{% csrf_token %}{{ form.as_p }}<button>שמירת טיוטה</button></form></section>
-{% else %}<p>{{ report.get_state_display }}</p>{% endif %}
-{% if report.pk %}
-<section><h2>אזורים שתועדו</h2><ul>{% for observation in observations %}
-<li>{% if editable %}<a href="{% url 'edit_area' report.pk observation.area %}">{{ observation.get_area_display }}</a>{% else %}{{ observation.get_area_display }}{% endif %}</li>
-{% empty %}<li>טרם הוספתם אזורים.</li>{% endfor %}</ul>
-{% if editable and observations|length < 11 %}<a class="button" href="{% url 'new_area' report.pk %}">הוסף אזור</a>{% endif %}</section>
-<div class="actions"><a class="button" href="{% url 'preview' report.pk %}">תצוגת קריאה</a>
-{% if editable %}<form method="post" action="{% url 'transition' report.pk 'submit' %}">{% csrf_token %}<button>שליחה לאישור</button></form>{% endif %}
-{% if can_review %}
-<form method="post" action="{% url 'transition' report.pk 'publish' %}">{% csrf_token %}<button>פרסום דו״ח</button></form>
-<form method="post" action="{% url 'transition' report.pk 'return' %}">{% csrf_token %}<button>החזרה לטיוטה</button></form>
-{% endif %}</div>{% endif %}{% endblock %}
+{% block content %}
+<div class="survey">
+    <a href="{% url 'desk' %}">חזרה לדו״חות</a>
+    <h1>{% if report.pk %}דו״ח מעקב תקופתי {{ report.visited_on|date:"j בF Y" }}{% else %}דו״ח חדש{% endif %}</h1>
+    <p>מצב: {{ report.get_state_display }}</p>
+    {% if editable %}
+    <form method="post" enctype="multipart/form-data" data-survey>
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <section class="survey-card">
+            <h2>פרטי הסיור</h2>
+            <div class="survey-meta"><div>{{ form.visited_on.as_field_group }}</div>
+            <fieldset><legend>סוקרים</legend>{{ form.reviewers.errors }}{{ form.reviewers }}</fieldset></div>
+        </section>
+        <section>
+            <h2>דיווח לפי אזור</h2>
+            <p>הוסיפו רק את האזורים שבדקתם בסיור.</p>
+            {{ area_forms.management_form }}{{ area_forms.non_form_errors }}
+            <div data-area-list>
+                {% for area_form in area_forms %}
+                    {% include 'park/area_form.html' %}
+                {% endfor %}
+            </div>
+            <template data-empty-area>{% include 'park/area_form.html' with area_form=area_forms.empty_form %}</template>
+            {% for item in previous %}
+            <template data-previous="{{ item.area }}">
+                <details>
+                    <summary>צפייה בדיווח הקודם · {{ item.report.visited_on|date:"j בF Y" }}</summary>
+                    <p>סטטוס: {{ item.get_status_display }}</p>
+                    {% if item.details %}{{ item.details|linebreaks }}{% endif %}
+                    {% if item.follow_up %}<p><strong>נקודות למעקב</strong></p>{{ item.follow_up|linebreaks }}{% endif %}
+                    <a href="{% url 'report' item.report_id %}#area-{{ item.area }}" target="_blank" rel="noopener">פתיחת הדיווח הקודם בחלון חדש</a>
+                </details>
+            </template>
+            {% endfor %}
+            <button hidden type="button" data-add-area>הוספת אזור</button>
+            <noscript>{% if report.pk %}<a href="{% url 'new_area' report.pk %}">הוספת אזור</a>{% else %}<p>שמרו טיוטה כדי להוסיף אזור.</p>{% endif %}</noscript>
+        </section>
+        <section class="survey-card">
+            <h2>לסיכום</h2>
+            {{ form.summary.as_field_group }}
+            <p>{{ form.next_visit.as_field_group }}</p>
+        </section>
+        <button type="submit">שמירת טיוטה</button>
+    </form>
+    {% endif %}
+    {% if report.pk %}
+    <section class="actions" aria-label="פעולות דו״ח">
+        <a class="button" href="{% url 'preview' report.pk %}">תצוגת קריאה</a>
+        {% if editable %}<form method="post" action="{% url 'transition' report.pk 'submit' %}">{% csrf_token %}<button>שליחה לאישור</button></form>{% endif %}
+        {% if can_review %}
+        <form method="post" action="{% url 'transition' report.pk 'publish' %}">{% csrf_token %}<button>פרסום דו״ח</button></form>
+        <form method="post" action="{% url 'transition' report.pk 'return' %}">{% csrf_token %}<button>החזרה לטיוטה</button></form>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

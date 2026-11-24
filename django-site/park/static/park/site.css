@@ -22,3 +22,20 @@ textarea{display:block;width:100%;min-height:5rem}.errorlist{color:#8a2924}.skip
 
 .grid .comparison{grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem}
 .grid .comparison figure{padding:.4rem;overflow-wrap:anywhere}
+
+.survey{max-width:52rem;margin-inline:auto}
+.survey h1{font-size:clamp(1.8rem,4vw,2.75rem)}
+.survey section{margin-block:1.5rem}
+.survey-card{background:#fff;border:1px solid var(--line);padding:clamp(.85rem,3vw,1.5rem);border-radius:.5rem}
+.survey-area{margin:0 0 1rem;min-width:0}
+.survey-area legend{font-weight:700;padding-inline:.4rem}
+.survey-area>div,.survey-area>fieldset{margin-block:.7rem}
+.survey-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:.75rem;align-items:start}
+.survey-meta fieldset,.survey-access{min-width:0;margin:0;border-radius:.35rem}
+.survey label:not([for$="-DELETE"]){display:block}
+.survey textarea{min-height:4rem}
+.survey input[type=file]{display:block;width:100%}
+.survey-photos{background:var(--wash);border-radius:.35rem;padding:.75rem}
+.survey-photos>div{margin-block:.5rem}
+.survey-area details{background:var(--wash);padding:.65rem}
+.survey-area summary{cursor:pointer;font-weight:600}
