@@ -24,4 +24,8 @@ AREAS = ['מתקני הכושר', 'בין צמרות', 'משחק לפעוטות'
 import os
 if os.getenv('BPARK_EXPORT_ENABLED') == '1':
     import runpy
-    LATEST_AREAS = runpy.run_path('scripts/export_reports.py', run_name='__main__')['LATEST_AREAS']
+    exported = runpy.run_path('scripts/export_reports.py', run_name='__main__')
+    LATEST_AREAS = exported['LATEST_AREAS']
+    AREA_HISTORY = exported['AREA_HISTORY']
+    REPORT_DETAILS = exported['REPORT_DETAILS']
+    PARK_OVERVIEW_IMAGE = '/images/park-overview.jpg' if os.path.isfile('content/images/park-overview.jpg') else ''

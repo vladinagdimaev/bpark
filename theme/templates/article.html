@@ -1,1 +1,116 @@
-{% extends 'base.html' %}{% block title %}{{ article.title }} | {{ SITENAME }}{% endblock %}{% block content %}<article class="wrap article"><a class="text-link" href="{{ SITEURL }}/">→ חזרה לדף הראשי</a><p class="section-kicker">דו״ח מעקב · <time datetime="{{ article.date.isoformat() }}">{{ article.locale_date }}</time></p><h1>{{ article.title }}</h1><p class="article-meta">מאת {{ article.author }}</p><div class="article-body">{{ article.content }}</div></article>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}{{ article.title }} | {{ SITENAME }}{% endblock %}
+{% block content %}
+{% set report = (REPORT_DETAILS|default({})).get(article.slug) %}
+<article class="wrap article">
+  <a class="text-link" href="{{ SITEURL }}/">→ חזרה לדף הראשי</a>
+  <h1>{{ article.title }}</h1>
+  {% if report %}
+  <p class="article-meta">סוקרים: {{ report.reviewers|default('לא צוינו', true)|e }}</p>
+  <div class="article-body">
+    {% if report.summary %}<p>{{ report.summary|e }}</p>{% endif %}
+    <h2>פרטי הסיור</h2>
+    <div class="survey-overview">
+      <nav class="area-tabs" aria-label="אזורי הגן" role="tablist">
+        {% for area in AREAS %}
+        <a role="tab" id="tab-{{ loop.index }}" aria-controls="area-{{ '%02d'|format(loop.index) }}" href="#area-{{ '%02d'|format(loop.index) }}">{{ area }}</a>
+        {% endfor %}
+      </nav>
+      {% if PARK_OVERVIEW_IMAGE %}
+      <img class="survey-image" src="{{ PARK_OVERVIEW_IMAGE }}" alt="הדמיה כללית של גן בנימין מטעם העירייה">
+      {% else %}
+      <div class="survey-image">הדמיית העירייה טרם צורפה</div>
+      {% endif %}
+    </div>
+    {% for area in AREAS %}
+    {% set entries = AREA_HISTORY.get(loop.index, [])|selectattr('position','ge',report.position)|list %}
+    <section role="tabpanel" aria-labelledby="tab-{{ loop.index }}" id="area-{{ '%02d'|format(loop.index) }}">
+      <h3>{{ area }}</h3>
+      {% if entries %}
+      <label>דיווח מתאריך
+        <select class="area-history">
+          {% for entry in entries %}<option value="{{ loop.index0 }}">{{ entry.date }}</option>{% endfor %}
+        </select>
+      </label>
+      {% if entries[0].position != report.position %}<p>התיעוד האחרון באזור הוא מסיור קודם.</p>{% endif %}
+      {% for entry in entries %}<div class="area-entry"{% if not loop.first %} hidden{% endif %}>{{ entry.html|safe }}</div>{% endfor %}
+      {% else %}
+      <p>האזור טרם תועד עד למועד הסיור הזה.</p>
+      {% endif %}
+    </section>
+    {% endfor %}
+    {{ report.notes|safe }}
+  </div>
+  <style>
+    .survey-overview{border:1px solid #cad8cf;max-width:34rem;margin:0 auto 1.5rem}
+    .area-tabs{display:flex;overflow:auto;gap:.3rem;padding:.5rem;scroll-snap-type:x proximity}
+    .area-tabs a{flex:0 0 auto;scroll-snap-align:start;padding:.35rem .65rem;border-radius:.25rem}
+    .area-tabs a[aria-selected=true]{background:#1d4836;color:#fff}
+    .survey-image{aspect-ratio:1;width:100%;object-fit:contain;display:grid;place-items:center;background:#e4ede5}
+    .area-history{font:inherit;margin-inline:.4rem}
+  </style>
+  <script>
+    (() => {
+      const tabs = [...document.querySelectorAll('.area-tabs [role="tab"]')];
+      function activate(tab, focus = false) {
+        for (const item of tabs) {
+          const active = item === tab;
+          item.setAttribute('aria-selected', active);
+          item.tabIndex = active ? 0 : -1;
+          document.getElementById(item.getAttribute('aria-controls')).hidden = !active;
+        }
+        if (focus) tab.focus({preventScroll: true});
+        if (focus) tab.scrollIntoView({block:'nearest', inline:'nearest'});
+      }
+      for (const [index, tab] of tabs.entries()) {
+        tab.addEventListener('click', event => {
+          event.preventDefault();
+          history.replaceState(null, '', tab.hash);
+          activate(tab, true);
+        });
+        tab.addEventListener('keydown', event => {
+          const next = {ArrowLeft:index+1, ArrowRight:index-1, Home:0, End:tabs.length-1}[event.key];
+          if (next === undefined) return;
+          event.preventDefault();
+          const target = tabs[(next + tabs.length) % tabs.length];
+          history.replaceState(null, '', target.hash);
+          activate(target, true);
+        });
+      }
+      for (const select of document.querySelectorAll('.area-history')) {
+        select.addEventListener('change', () => {
+          [...select.closest('[role="tabpanel"]').querySelectorAll('.area-entry')].forEach((entry, index) => {
+            entry.hidden = index !== Number(select.value);
+          });
+        });
+      }
+      let touchStart;
+      const image = document.querySelector('.survey-image');
+      image.addEventListener('touchstart', event => {
+        const {clientX:x, clientY:y} = event.changedTouches[0];
+        touchStart = {x, y};
+      }, {passive:true});
+      image.addEventListener('touchend', event => {
+        if (!touchStart) return;
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - touchStart.x;
+        const dy = touch.clientY - touchStart.y;
+        touchStart = null;
+        if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+        const active = tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true');
+        const target = tabs[active + Math.sign(dx)];
+        if (target) {
+          history.replaceState(null, '', target.hash);
+          activate(target);
+          target.scrollIntoView({block:'nearest', inline:'nearest'});
+        }
+      }, {passive:true});
+      activate(tabs.find(tab => tab.hash === location.hash) || tabs[0]);
+    })();
+  </script>
+  {% else %}
+  <p class="article-meta">מאת {{ article.author }}</p>
+  <div class="article-body">{{ article.content }}</div>
+  {% endif %}
+</article>
+{% endblock %}

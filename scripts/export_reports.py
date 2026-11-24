@@ -19,6 +19,9 @@ from PIL import Image, ImageOps
 from psycopg.rows import dict_row
 
 LATEST_AREAS = {}
+AREA_HISTORY = {}
+REPORT_DETAILS = {}
+MONTHS = 'ינואר פברואר מרץ אפריל מאי יוני יולי אוגוסט ספטמבר אוקטובר נובמבר דצמבר'.split()
 ACCESSIBILITY = (
     'המעבר פנוי',
     'קיימת גישה רציפה',
@@ -47,11 +50,14 @@ def export_image(key, filename):
     return '/images/published/' + filename
 
 with psycopg.connect(os.environ['BPARK_READ_DATABASE_URL'], row_factory=dict_row) as db:
-    reports = db.execute("SELECT id,title,visit_at,summary,participants,next_visit_focus FROM reports WHERE status='published' OR (status='approved' AND publication_requested_at IS NOT NULL) ORDER BY visit_at DESC").fetchall()
-    for report in reports:
+    reports = db.execute("SELECT id,title,visit_at,summary,participants,next_visit_focus FROM reports WHERE status='published' OR (status='approved' AND publication_requested_at IS NOT NULL) ORDER BY visit_at DESC, id").fetchall()
+    for position, report in enumerate(reports):
         rid=str(report['id'])
-        title=' '.join(report['title'].splitlines()).strip().replace('<','&lt;').replace('>','&gt;')
-        date=report['visit_at'].astimezone(ZoneInfo('Asia/Jerusalem')).strftime('%Y-%m-%d %H:%M')
+        visit = report['visit_at'].astimezone(ZoneInfo('Asia/Jerusalem'))
+        date = visit.strftime('%Y-%m-%d %H:%M')
+        display_date = f'{visit.day} ב{MONTHS[visit.month - 1]} {visit.year}'
+        title = f'דו"ח מעקב תקופתי {display_date}'
+        REPORT_DETAILS[f'report-{rid}'] = {'position': position, 'reviewers': report['participants'], 'summary': report['summary']}
         parts=[f'Title: {title}\nDate: {date}\nSlug: report-{rid}\nSummary: דו״ח מעקב קהילתי\n\n', '<h2>פרטי הסיור</h2>',field('משתתפים',report['participants']),field('סיכום הביקור',report['summary'])]
         rows=db.execute("SELECT areas.id,areas.name,observations.*, to_jsonb(observations)->'accessibility' AS accessibility_answers FROM areas LEFT JOIN area_observations observations ON observations.area_id=areas.id AND observations.report_id=%s ORDER BY areas.id",(rid,)).fetchall()
         for area in rows:
@@ -62,6 +68,7 @@ with psycopg.connect(os.environ['BPARK_READ_DATABASE_URL'], row_factory=dict_row
             if area['work_status'] in (None, 'not_checked') and not (photos or has_notes or answers):
                 continue
             current = LATEST_AREAS.setdefault(aid, {'slug': f'report-{rid}', 'date': date.split()[0]})
+            start = len(parts)
             parts.extend([f'<span id="area-{aid:02d}"></span>',f'<h3>{aid}. {text(area["name"])}</h3>',field('סטטוס',STATUS.get(area['work_status'],'לא נבדק')),field('מה השתנה',area['change_since_previous']),field('ממצא',area['observation']),field('התרשמות',area['interpretation']),field('שאלה',area['question']),'<div class="compare-grid"><figure><figcaption>תכנון העירייה</figcaption>'])
             plans=db.execute('SELECT id,object_key,caption,source FROM area_plans WHERE area_id=%s ORDER BY id',(aid,)).fetchall()
             if not plans: parts.append('<p>חומר תכנון טרם צורף.</p>')
@@ -80,10 +87,13 @@ with psycopg.connect(os.environ['BPARK_READ_DATABASE_URL'], row_factory=dict_row
             if any(answers.get(question) for question in ACCESSIBILITY):
                 parts.append('<h4>נגישות</h4>')
                 parts.extend(field(question, answers[question]) for question in ACCESSIBILITY if answers.get(question))
+            AREA_HISTORY.setdefault(aid, []).append({'position': position, 'date': display_date, 'html': '\n'.join(parts[start+2:])})
         notes=db.execute('SELECT topic,content FROM report_notes WHERE report_id=%s',(rid,)).fetchall()
         labels={'entrances':'כניסות לגן','accessibility_transport':'תחבורה ונגישות','infrastructure':'תשתיות','summary':'סיכום'}
+        notes_start = len(parts)
         parts.append('<h2>נושאים נוספים</h2>')
         parts.extend(field(labels.get(n['topic'],n['topic']),n['content']) for n in notes)
         parts.append(field('מה נבדוק בשבוע הבא',report['next_visit_focus']))
+        REPORT_DETAILS[f'report-{rid}']['notes'] = '\n'.join(parts[notes_start:])
         (out / f'report-{rid}.md').write_text('\n'.join(parts),encoding='utf-8')
 print(f'Exported {len(reports)} approved reports.')
