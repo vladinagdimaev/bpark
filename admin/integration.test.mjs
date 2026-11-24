@@ -12,7 +12,7 @@ async function query(sql,args=[]){
  if(sql.startsWith('INSERT INTO report_photos'))return {rows:[{id:'00000000-0000-4000-8000-000000000003',area_id:args[1],caption:args[3]}],rowCount:1};
  if(sql.startsWith('INSERT INTO report_notes'))return {rows:[],rowCount:1};
  if(sql.startsWith("UPDATE reports SET status='in_review'")){if(report.status!=='draft'||new Set(observations).size!==11)return {rows:[],rowCount:0};report.status='in_review';return {rows:[{id:reportId}],rowCount:1}}
- if(sql.startsWith('SELECT status FROM reports'))return {rows:[{status:report.status}],rowCount:1};
+ if(sql.startsWith('SELECT status, created_by FROM reports'))return {rows:[{status:report.status,created_by:report.created_by}],rowCount:1};
  if(sql.startsWith('INSERT INTO report_approvals')){approvals.add(args[1]);return {rows:[],rowCount:1}}
  if(sql.startsWith('SELECT count(*) FILTER'))return {rows:[{volunteers:+approvals.has('vol'),coordinators:+approvals.has('coord')}],rowCount:1};
  if(sql.startsWith("UPDATE reports SET status='approved'")){report.status='approved';return {rows:[],rowCount:1}}
@@ -40,4 +40,19 @@ test('draft save rejects stale editors and approval requires two people includin
  r=await call('coord','POST','/api/reports/'+reportId+'/approve');assert.equal((await r.json()).status,'in_review','duplicate vote does not count');
  r=await call('vol','POST','/api/reports/'+reportId+'/approve');assert.equal((await r.json()).status,'approved');
  r=await call('vol','POST','/api/reports/'+reportId+'/publish');assert.equal(r.status,403,'only coordinator publishes');
+});
+
+
+test('temporary reviewer approves only their own report alone',async()=>{
+ const id='818b30ed-2fe9-4684-acea-a010f344dbf6';
+ users[id]={auth_user_id:id,display_name:'Owner',role:'volunteer'};
+ report.status='in_review';
+ report.created_by='vol';
+ approvals.clear();
+ let r=await call(id,'POST','/api/reports/'+reportId+'/approve');
+ assert.equal((await r.json()).status,'in_review');
+ report.created_by=id;
+ approvals.clear();
+ r=await call(id,'POST','/api/reports/'+reportId+'/approve');
+ assert.equal((await r.json()).status,'approved');
 });
