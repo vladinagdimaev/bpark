@@ -1,15 +1,74 @@
 {% extends 'park/base.html' %}
 {% block content %}
-<section class="hero"><p>חיפה · גן בנימין</p><h1>מעקב אחר שיפוץ גן בנימין</h1>
-<p>תיעוד מהשטח לצד תוכניות העירייה, לפי אזור ותאריך סיור.</p></section>
-<section><h2>הדו״ח האחרון</h2>
-{% if latest %}<a class="card" href="{% url 'report' latest.pk %}">דו״ח מעקב תקופתי {{ latest.visited_on|date:"j בF Y" }}</a>
-{% else %}<p>הדו״ח הראשון יופיע כאן לאחר פרסומו.</p>{% endif %}</section>
-<section><h2>11 אזורים בגן</h2><ul class="grid">
-{% for area, name, report_id in areas %}
-<li class="card">{% if report_id %}<a href="{% url 'report' report_id %}#area-{{ area }}">{{ name }}</a>{% else %}{{ name }}{% endif %}</li>
-{% endfor %}</ul></section>
-<section id="archive"><h2>כל הדו״חות</h2>
-<ul class="archive">{% for report in reports %}<li><a href="{% url 'report' report.pk %}">דו״ח מעקב תקופתי {{ report.visited_on|date:"j בF Y" }}</a></li>
-{% empty %}<li>דו״חות שיפורסמו יופיעו כאן לפי תאריך הסיור.</li>{% endfor %}</ul></section>
+<section class="hero">
+    <p>גן בנימין, חיפה</p>
+    <h1>עוקבים יחד אחרי הגן שלנו</h1>
+    <p>מה מתוכנן, מה קורה בשטח ומה עוד דורש תשומת לב? מעקב קהילתי מתועד אחר השיפוץ בגן בנימין.</p>
+    <a class="button" href="#latest">לתמונת המצב</a>
+</section>
+
+<section aria-labelledby="intro-heading">
+    <h2 id="intro-heading">התוכנית והשטח, באותו המקום</h2>
+    <p>בכל ביקור נצלם את מצב העבודות ונציג אותו לצד ההדמיות והתשריטים של העירייה. כך נוכל לעקוב יחד אחרי השינויים לאורך זמן.</p>
+</section>
+
+<section id="latest">
+    <h2>הדו״ח האחרון</h2>
+    <div class="card">
+        {% if latest %}
+        <h3><a href="{% url 'report' latest.pk %}">דו״ח מעקב תקופתי {{ latest.visited_on|date:"j בF Y" }}</a></h3>
+        {% if latest.summary %}<p>{{ latest.summary|truncatewords:45 }}</p>{% endif %}
+        {% else %}
+        <h3>הדו״ח הראשון בדרך</h3>
+        <p>כאן נפרסם את הממצאים מהסיור ואת ההשוואה לתוכניות העירייה.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section id="areas">
+    <h2>11 אזורים בגן</h2>
+    <p>בחרו אזור כדי לקרוא את העדכון האחרון שפורסם עליו. לצד תוכנית העירייה יופיע הצילום האחרון הזמין מהשטח, עם תאריך הסיור.</p>
+    <ul class="grid">
+        {% for area, name, report_id, plan, photo in areas %}
+        <li class="card">
+            <h3>{% if report_id %}<a href="{% url 'report' report_id %}#area-{{ area }}">{{ name }}</a>{% else %}{{ name }}{% endif %}</h3>
+            {% if plan or photo %}
+            <div class="comparison">
+                <figure>
+                    <figcaption>תוכנית העירייה</figcaption>
+                    {% if plan %}<img loading="lazy" src="{% url 'municipal_photo' area %}" alt="התוכנית לאזור {{ name }}">
+                    {% else %}<p>טרם צורפה תוכנית.</p>{% endif %}
+                </figure>
+                <figure>
+                    <figcaption>צילום מהשטח</figcaption>
+                    {% if photo %}
+                    <a href="{% url 'report' photo.report_id %}#area-{{ area }}">
+                        <img loading="lazy" src="{% url 'observation_photo' photo.pk %}" alt="צילום מהשטח באזור {{ name }}">
+                        <time datetime="{{ photo.report.visited_on|date:'Y-m-d' }}">{{ photo.report.visited_on|date:"j בF Y" }}</time>
+                    </a>
+                    {% else %}<p>טרם צורף צילום.</p>{% endif %}
+                </figure>
+            </div>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section id="archive">
+    <h2>כל הדו״חות</h2>
+    {% if reports %}
+    <ul class="archive">
+        {% for report in reports %}
+        <li><a href="{% url 'report' report.pk %}">דו״ח מעקב תקופתי {{ report.visited_on|date:"j בF Y" }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}<p>כאן יופיעו הדו״חות לאחר פרסומם, לפי תאריך הסיור.</p>{% endif %}
+</section>
+
+<section id="about">
+    <h2>על היוזמה</h2>
+    <p>אנחנו ולדי ואריאל, תושבים שעוקבים אחר התקדמות השיפוץ בגן בנימין ומשתפים את הציבור בממצאים.</p>
+    <p>בדו״חות נבחין בין מה שראינו בסיור לבין מידע שנמסר לנו, ונציין את מועד התיעוד ואת מקור המידע כשאפשר.</p>
+</section>
 {% endblock %}
