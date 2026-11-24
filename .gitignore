@@ -4,3 +4,7 @@ __pycache__/
 output/
 dist/
 .env
+node_modules/
+admin/build/
+content/reports/generated/
+content/images/published/

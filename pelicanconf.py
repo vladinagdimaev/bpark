@@ -18,3 +18,14 @@ CATEGORY_FEED_ATOM = None
 RELATIVE_URLS = True
 
 AREAS = ['מתקני הכושר', 'בין צמרות', 'משחק לפעוטות', 'מצללת מטפסים', 'רחבת נורדאו', 'המעיין הפועם', 'אזור נדנדות', 'דק הפרלמנט', 'שביל נגיש', 'פרגולות הזית והחורשה', 'חצר כלבים']
+
+# Import approved, explicitly requested reports during the Render build.
+# The exporter is a no-op without this opt-in; failures stop publication.
+import os
+if os.getenv('BPARK_EXPORT_ENABLED') == '1':
+    import runpy
+    exported = runpy.run_path('scripts/export_reports.py', run_name='__main__')
+    LATEST_AREAS = exported['LATEST_AREAS']
+    AREA_HISTORY = exported['AREA_HISTORY']
+    REPORT_DETAILS = exported['REPORT_DETAILS']
+    PARK_OVERVIEW_IMAGE = '/images/park-overview.jpg' if os.path.isfile('content/images/park-overview.jpg') else ''
