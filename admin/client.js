@@ -27,3 +27,42 @@ $('#areas').onclick=async e=>{const area=e.target.dataset.area;if(!area)return;c
 $('#logout').onclick=async()=>{await auth.signOut();location.reload()};
 (async()=>{try{const c=await(await fetch('/config')).json();auth=createAuthClient(c.authUrl);const me=await api('me');$('#login').hidden=true;$('#list-area').hidden=false;$('#who').textContent=me.display_name;await list()}catch{note('יש להתחבר עם חשבון מורשה.')}})();
 
+
+let resetEmail;
+$('#request-reset').onclick = async event => {
+  const email = document.querySelector('[name=email]');
+  if (!email.reportValidity()) return;
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    const address = email.value.trim();
+    const {error} = await auth.emailOtp.sendVerificationOtp({email:address,type:'forget-password'});
+    if (error) throw error;
+    resetEmail = address;
+    $('#reset-form').reset();
+    $('#reset-form').hidden = false;
+    $('#reset-form [name=reset-code]').focus();
+    note('אם קיים חשבון בכתובת הזו, יישלח אליו קוד לאיפוס הסיסמה.');
+  } catch {
+    note('לא ניתן לשלוח קוד איפוס כרגע. נסו שוב בעוד כמה דקות.');
+  } finally { button.disabled = false; }
+};
+$('#reset-form').onsubmit = async event => {
+  event.preventDefault();
+  if (!resetEmail) return;
+  const form = event.currentTarget;
+  const button = form.querySelector('button');
+  button.disabled = true;
+  try {
+    const {error} = await auth.emailOtp.resetPassword({email:resetEmail,otp:value('reset-code').trim(),password:value('new-password')});
+    if (error) throw error;
+    form.reset();
+    form.hidden = true;
+    resetEmail = undefined;
+    document.querySelector('[name=password]').value = '';
+    document.querySelector('[name=password]').focus();
+    note('הסיסמה עודכנה. אפשר להתחבר עם הסיסמה החדשה.');
+  } catch {
+    note('האיפוס לא הושלם. בדקו את הקוד והסיסמה, או בקשו קוד חדש.');
+  } finally { button.disabled = false; }
+};
