@@ -29,10 +29,10 @@ function areaMarkup(id,area){
  '<label>סטטוס עבודה<select data-value="status">'+options(statuses,area.status,'בחירת סטטוס')+'</select></label>'+
  '<label>מה ראינו?<textarea data-value="text">'+escape(area.text)+'</textarea></label>'+
  '<label>נקודות למעקב<textarea data-value="follow">'+escape(area.follow)+'</textarea></label>'+
- '<details><summary>שאלות נגישות לדוגמה</summary>'+checks.map((check,i)=>'<label>'+escape(check)+'<select data-value="check'+i+'">'+options(['קיים','לא קיים','לא נבדק','לא רלוונטי'],area['check'+i],'בחירת תשובה')+'</select></label><label>הערה על '+escape(check)+'<input data-value="note'+i+'" value="'+escape(area['note'+i])+'"></label>').join('')+
+ '<details><summary>שאלות נגישות לדוגמה</summary>'+checks.map((check,i)=>'<label>'+escape(check)+'<select data-value="check'+i+'">'+options(['קיים','לא קיים','לא נבדק','לא רלוונטי'],area['check'+i],'בחירת תשובה')+'</select></label>').join('')+
  '</details><button type="button" class="secondary" data-remove>הסרת אזור מהטיוטה</button>':
  (area.status?'<p><strong>'+escape(area.status)+'</strong></p>':'')+(area.text?'<p>'+escape(area.text)+'</p>':'')+(area.follow?'<p>למעקב · '+escape(area.follow)+'</p>':'')+
- checks.map((check,i)=>area['check'+i]?'<p>'+escape(check)+' · '+escape(area['check'+i])+(area['note'+i]?' · '+escape(area['note'+i]):'')+'</p>':'').join(''))+'</article>';
+ checks.map((check,i)=>area['check'+i]?'<p>'+escape(check)+' · '+escape(area['check'+i])+'</p>':'').join(''))+'</article>';
 }
 function render(){
  get('mode').textContent=edit?'תצוגת קריאה':'חזרה לעריכה';
