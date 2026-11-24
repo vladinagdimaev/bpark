@@ -18,6 +18,13 @@ import psycopg
 from PIL import Image, ImageOps
 from psycopg.rows import dict_row
 
+LATEST_AREAS = {}
+ACCESSIBILITY = (
+    'המעבר פנוי',
+    'קיימת גישה רציפה',
+    'קיים מעבר נוח לכיסא גלגלים',
+)
+
 Image.MAX_IMAGE_PIXELS = 50_000_000
 out = Path('content/reports/generated')
 images = Path('content/images/published')
@@ -46,19 +53,33 @@ with psycopg.connect(os.environ['BPARK_READ_DATABASE_URL'], row_factory=dict_row
         title=' '.join(report['title'].splitlines()).strip().replace('<','&lt;').replace('>','&gt;')
         date=report['visit_at'].astimezone(ZoneInfo('Asia/Jerusalem')).strftime('%Y-%m-%d %H:%M')
         parts=[f'Title: {title}\nDate: {date}\nSlug: report-{rid}\nSummary: דו״ח מעקב קהילתי\n\n', '<h2>פרטי הסיור</h2>',field('משתתפים',report['participants']),field('סיכום הביקור',report['summary'])]
-        rows=db.execute('SELECT areas.id,areas.name,observations.* FROM areas LEFT JOIN area_observations observations ON observations.area_id=areas.id AND observations.report_id=%s ORDER BY areas.id',(rid,)).fetchall()
+        rows=db.execute('SELECT areas.id,areas.name,observations.*, to_jsonb(observations)->'accessibility' AS accessibility_answers FROM areas LEFT JOIN area_observations observations ON observations.area_id=areas.id AND observations.report_id=%s ORDER BY areas.id',(rid,)).fetchall()
         for area in rows:
-            aid=area['id'];parts.extend([f'<span id="area-{aid:02d}"></span>',f'<h3>{aid}. {text(area["name"])}</h3>',field('מצב',STATUS.get(area['work_status'],'לא נבדק')),field('מה השתנה',area['change_since_previous']),field('ממצא',area['observation']),field('התרשמות',area['interpretation']),field('שאלה',area['question']),'<div class="compare-grid"><figure><figcaption>תכנון העירייה</figcaption>'])
+            aid = area['id']
+            photos=db.execute('SELECT id,object_key,caption,photographed_at FROM report_photos WHERE report_id=%s AND area_id=%s ORDER BY created_at DESC',(rid,aid)).fetchall()
+            answers = area.get('accessibility_answers') or {}
+            has_notes = any(area[key] for key in ('change_since_previous', 'observation', 'interpretation', 'question'))
+            if area['work_status'] in (None, 'not_checked') and not (photos or has_notes or answers):
+                continue
+            current = LATEST_AREAS.setdefault(aid, {'slug': f'report-{rid}', 'date': date.split()[0]})
+            parts.extend([f'<span id="area-{aid:02d}"></span>',f'<h3>{aid}. {text(area["name"])}</h3>',field('סטטוס',STATUS.get(area['work_status'],'לא נבדק')),field('מה השתנה',area['change_since_previous']),field('ממצא',area['observation']),field('התרשמות',area['interpretation']),field('שאלה',area['question']),'<div class="compare-grid"><figure><figcaption>תכנון העירייה</figcaption>'])
             plans=db.execute('SELECT id,object_key,caption,source FROM area_plans WHERE area_id=%s ORDER BY id',(aid,)).fetchall()
             if not plans: parts.append('<p>חומר תכנון טרם צורף.</p>')
             for plan in plans:
-                src=export_image(plan['object_key'],f'plan-{plan["id"]}.jpg');parts.append(f'<img src="{src}" alt="{text(plan["caption"] or "תכנון העירייה")}"><p>{text(plan["caption"])} {text(plan["source"])}</p>')
+                src=export_image(plan['object_key'],f'plan-{plan["id"]}.jpg')
+                current.setdefault('plan', src)
+                parts.append(f'<img src="{src}" alt="{text(plan["caption"] or "תכנון העירייה")}"><p>{text(plan["caption"])} {text(plan["source"])}</p>')
             parts.append('</figure><figure><figcaption>המצב בשטח</figcaption>')
-            photos=db.execute('SELECT id,object_key,caption,photographed_at FROM report_photos WHERE report_id=%s AND area_id=%s ORDER BY created_at',(rid,aid)).fetchall()
             if not photos: parts.append('<p>צילום שטח טרם צורף.</p>')
             for photo in photos:
-                src=export_image(photo['object_key'],f'photo-{photo["id"]}.jpg');parts.append(f'<img src="{src}" alt="{text(photo["caption"] or "צילום האזור בשטח")}"><p>{text(photo["caption"])} {text(photo["photographed_at"])}</p>')
+                src=export_image(photo['object_key'],f'photo-{photo["id"]}.jpg')
+                if 'photo' not in current:
+                    current.update(photo=src, photo_date=date.split()[0], photo_slug=f'report-{rid}')
+                parts.append(f'<img src="{src}" alt="{text(photo["caption"] or "צילום האזור בשטח")}"><p>{text(photo["caption"])} {text(photo["photographed_at"])}</p>')
             parts.append('</figure></div>')
+            if any(answers.get(question) for question in ACCESSIBILITY):
+                parts.append('<h4>נגישות</h4>')
+                parts.extend(field(question, answers[question]) for question in ACCESSIBILITY if answers.get(question))
         notes=db.execute('SELECT topic,content FROM report_notes WHERE report_id=%s',(rid,)).fetchall()
         labels={'entrances':'כניסות לגן','accessibility_transport':'תחבורה ונגישות','infrastructure':'תשתיות','summary':'סיכום'}
         parts.append('<h2>נושאים נוספים</h2>')

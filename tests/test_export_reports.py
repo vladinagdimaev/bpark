@@ -16,7 +16,7 @@ class DB:
             assert "publication_requested_at IS NOT NULL" in sql
             return Rows([{'id':'00000000-0000-0000-0000-000000000001','title':'Example','visit_at':datetime(2026,11,15,7,0,tzinfo=timezone.utc),'summary':'<script>alert(1)</script>','participants':'A','next_visit_focus':'Next'}])
         if 'FROM areas LEFT JOIN' in sql:
-            return Rows([{'id':i,'name':f'area {i}','work_status':'not_checked','change_since_previous':'','observation':'<img src=x onerror=alert(1)>','interpretation':'','question':''} for i in range(1,12)])
+            return Rows([{'id':i,'name':f'area {i}','work_status':'not_checked','change_since_previous':'','observation':'<img src=x onerror=alert(1)>' if i == 1 else '', 'accessibility_answers':{'המעבר פנוי':'קיים'} if i == 1 else {},'interpretation':'','question':''} for i in range(1,12)])
         if 'FROM area_plans' in sql: return Rows([])
         if 'FROM report_photos' in sql: return Rows([{'id':'00000000-0000-0000-0000-000000000002','object_key':'private.jpg','caption':'Test photo','photographed_at':None}] if args[1]==1 else [])
         if 'FROM report_notes' in sql: return Rows([])
@@ -35,7 +35,9 @@ class ExportTest(unittest.TestCase):
             try:
                 runpy.run_path(str(SCRIPT),run_name='__main__')
                 text=next(Path('content/reports/generated').glob('*.md')).read_text()
-                self.assertEqual(text.count('<div class="compare-grid">'),11)
+                self.assertEqual(text.count('<div class="compare-grid">'),1)
+                self.assertIn('<strong>סטטוס:</strong>',text)
+                self.assertIn('<h4>נגישות</h4>',text)
                 self.assertIn('&lt;script&gt;',text); self.assertNotIn('<script>',text)
                 self.assertIn('Date: 2026-11-15 09:00',text)
                 self.assertTrue(next(Path('content/images/published').glob('*.jpg')).is_file())

@@ -31,8 +31,8 @@ function areaMarkup(id,area){
  '<label>נקודות למעקב<textarea data-value="follow">'+escape(area.follow)+'</textarea></label>'+
  '<details><summary>שאלות נגישות לדוגמה</summary>'+checks.map((check,i)=>'<label>'+escape(check)+'<select data-value="check'+i+'">'+options(['קיים','לא קיים','לא נבדק','לא רלוונטי'],area['check'+i],'בחירת תשובה')+'</select></label>').join('')+
  '</details><button type="button" class="secondary" data-remove>הסרת אזור מהטיוטה</button>':
- (area.status?'<p><strong>'+escape(area.status)+'</strong></p>':'')+(area.text?'<p>'+escape(area.text)+'</p>':'')+(area.follow?'<p>למעקב · '+escape(area.follow)+'</p>':'')+
- checks.map((check,i)=>area['check'+i]?'<p>'+escape(check)+' · '+escape(area['check'+i])+'</p>':'').join(''))+'</article>';
+ (area.status?'<p><strong>סטטוס: </strong>'+escape(area.status)+'</p>':'')+(area.text?'<p>'+escape(area.text)+'</p>':'')+(area.follow?'<p>למעקב · '+escape(area.follow)+'</p>':'')+
+ (checks.some((_,i)=>area['check'+i])?'<h3>נגישות</h3>':'')+checks.map((check,i)=>area['check'+i]?'<p>'+escape(check)+' · '+escape(area['check'+i])+'</p>':'').join(''))+'</article>';
 }
 function render(){
  get('mode').textContent=edit?'תצוגת קריאה':'חזרה לעריכה';

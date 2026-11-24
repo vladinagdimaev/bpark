@@ -24,4 +24,4 @@ AREAS = ['מתקני הכושר', 'בין צמרות', 'משחק לפעוטות'
 import os
 if os.getenv('BPARK_EXPORT_ENABLED') == '1':
     import runpy
-    runpy.run_path('scripts/export_reports.py', run_name='__main__')
+    LATEST_AREAS = runpy.run_path('scripts/export_reports.py', run_name='__main__')['LATEST_AREAS']
