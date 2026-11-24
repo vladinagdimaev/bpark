@@ -13,12 +13,12 @@
     <div class="survey-overview">
       <nav class="area-tabs" aria-label="אזורי הגן" role="tablist">
         {% for area in AREAS %}
-        <a role="tab" id="tab-{{ loop.index }}" aria-controls="area-{{ '%02d'|format(loop.index) }}" href="#area-{{ '%02d'|format(loop.index) }}">{{ area }}</a>
+        <a role="tab" id="tab-{{ loop.index }}" aria-controls="area-{{ '%02d'|format(loop.index) }}" href="#area-{{ '%02d'|format(loop.index) }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ 0 if loop.first else -1 }}">{{ area }}</a>
         {% endfor %}
       </nav>
     {% for area in AREAS %}
     {% set entries = AREA_HISTORY.get(loop.index, [])|selectattr('position','ge',report.position)|list %}
-    <section role="tabpanel" aria-labelledby="tab-{{ loop.index }}" id="area-{{ '%02d'|format(loop.index) }}">
+    <section role="tabpanel" aria-labelledby="tab-{{ loop.index }}" id="area-{{ '%02d'|format(loop.index) }}"{% if not loop.first %} hidden{% endif %}>
       <h3>{{ area }}</h3>
       {% if PARK_OVERVIEW_IMAGE %}
       <img class="survey-image" src="{{ PARK_OVERVIEW_IMAGE }}" alt="הדמיה כללית של גן בנימין מטעם העירייה">
@@ -46,19 +46,24 @@
     .area-tabs{display:flex;flex-wrap:wrap;gap:.3rem;padding:.5rem;border-bottom:1px solid #cad8cf}
     .area-tabs a{padding:.35rem .65rem;border-radius:.25rem}
     .area-tabs a[aria-selected=true]{background:#1d4836;color:#fff}
+    .survey-overview [hidden]{display:none !important}
     .survey-overview [role=tabpanel]{padding:clamp(1rem,3vw,1.75rem)}
     .survey-image{aspect-ratio:1;width:min(100%,22rem);margin:0 auto 1rem;object-fit:contain;display:grid;place-items:center;background:#e4ede5}
     .area-history{font:inherit;margin-inline:.4rem}
   </style>
   <script>
     (() => {
-      const tabs = [...document.querySelectorAll('.area-tabs [role="tab"]')];
+      const surface = document.querySelector('.survey-overview');
+      const tabs = [...surface.querySelectorAll('.area-tabs [role="tab"]')];
+      const panels = surface.querySelectorAll('[role="tabpanel"]');
       function activate(tab, focus = false) {
         for (const item of tabs) {
           const active = item === tab;
           item.setAttribute('aria-selected', active);
           item.tabIndex = active ? 0 : -1;
-          document.getElementById(item.getAttribute('aria-controls')).hidden = !active;
+        }
+        for (const panel of panels) {
+          panel.hidden = panel.id !== tab.getAttribute('aria-controls');
         }
         if (focus) tab.focus({preventScroll: true});
         if (focus) tab.scrollIntoView({block:'nearest', inline:'nearest'});
@@ -86,7 +91,6 @@
         });
       }
       let touchStart;
-      const surface = document.querySelector('.survey-overview');
       surface.addEventListener('touchstart', event => {
         touchStart = null;
         if (event.touches.length !== 1 || event.target.closest('select, input, a, button')) return;
