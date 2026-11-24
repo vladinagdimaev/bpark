@@ -27,29 +27,11 @@
 
 <section id="areas">
     <h2>11 אזורים בגן</h2>
-    <p>בחרו אזור כדי לקרוא את העדכון האחרון שפורסם עליו. לצד תוכנית העירייה יופיע הצילום האחרון הזמין מהשטח, עם תאריך הסיור.</p>
+    <p>בחרו אזור כדי לקרוא את העדכון האחרון שפורסם עליו.</p>
     <ul class="grid">
-        {% for area, name, report_id, plan, photo in areas %}
+        {% for area, name, report_id in areas %}
         <li class="card">
             <h3>{% if report_id %}<a href="{% url 'report' report_id %}#area-{{ area }}">{{ name }}</a>{% else %}{{ name }}{% endif %}</h3>
-            {% if plan or photo %}
-            <div class="comparison">
-                <figure>
-                    <figcaption>תוכנית העירייה</figcaption>
-                    {% if plan %}<img loading="lazy" src="{% url 'municipal_photo' area %}" alt="התוכנית לאזור {{ name }}">
-                    {% else %}<p>טרם צורפה תוכנית.</p>{% endif %}
-                </figure>
-                <figure>
-                    <figcaption>צילום מהשטח</figcaption>
-                    {% if photo %}
-                    <a href="{% url 'report' photo.report_id %}#area-{{ area }}">
-                        <img loading="lazy" src="{% url 'observation_photo' photo.pk %}" alt="צילום מהשטח באזור {{ name }}">
-                        <time datetime="{{ photo.report.visited_on|date:'Y-m-d' }}">{{ photo.report.visited_on|date:"j בF Y" }}</time>
-                    </a>
-                    {% else %}<p>טרם צורף צילום.</p>{% endif %}
-                </figure>
-            </div>
-            {% endif %}
         </li>
         {% endfor %}
     </ul>

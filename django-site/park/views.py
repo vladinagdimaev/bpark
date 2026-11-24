@@ -29,18 +29,16 @@ def public_observations():
 def home(request):
     reports = list(public_reports())
     latest_by_area = {}
-    photos_by_area = {}
-    observations = public_observations().select_related("report").order_by("-report__visited_on", "-report_id")
-    for row in observations:
-        latest_by_area.setdefault(row.area, row.report_id)
-        if row.has_photo:
-            photos_by_area.setdefault(row.area, row)
-    plan_areas = set(MunicipalImage.objects.values_list("area", flat=True))
+    observations = Observation.objects.filter(report__state=Report.State.PUBLIC)
+    for area, report_id in observations.order_by(
+        "-report__visited_on", "-report_id"
+    ).values_list("area", "report_id"):
+        latest_by_area.setdefault(area, report_id)
     return render(request, "park/home.html", {
         "reports": reports,
         "latest": reports[0] if reports else None,
         "areas": [
-            (area, name, latest_by_area.get(area), area in plan_areas, photos_by_area.get(area))
+            (area, name, latest_by_area.get(area))
             for area, name in AREA_CHOICES
         ],
     })
